@@ -41,5 +41,5 @@ class TimelineItemWithThumbnail extends StatelessWidget {
 }
 
 abstract class ThumbnailProvider {
-  ImageProvider thumbnail(int index);
+  ImageProvider thumbnail(int seconds);
 }
