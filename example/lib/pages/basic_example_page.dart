@@ -77,8 +77,8 @@ class ExampleThumbnailProvider implements ThumbnailProvider {
   final assets = ["assets/icon_flutter.png", "assets/icon_flutter_solid.png", "assets/icon_flutter_dk-blue.png", "assets/icon_flutter_wht.png"];
 
   @override
-  Image thumbnail(int seconds) {
-    return Image(image: AssetImage(assets[seconds % assets.length]), fit: BoxFit.contain,);
+  ImageProvider thumbnail(int seconds) {
+    return AssetImage(assets[seconds % assets.length]);
   }
 
 }

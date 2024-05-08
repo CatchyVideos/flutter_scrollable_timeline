@@ -10,15 +10,20 @@ class TimelineItemWithThumbnail extends StatelessWidget {
   final double rulerInsidePadding;
   final ThumbnailProvider thumbnailProvider;
 
-  TimelineItemWithThumbnail(this.curItem, this.backgroundColor,
-      this.rulerOutsidePadding, this.rulerSize, this.rulerInsidePadding,
-      this.thumbnailProvider, {Key? key})
+  TimelineItemWithThumbnail(
+      this.curItem,
+      this.backgroundColor,
+      this.rulerOutsidePadding,
+      this.rulerSize,
+      this.rulerInsidePadding,
+      this.thumbnailProvider,
+      {Key? key})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FittedBox(
-      child: Container(
+        child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: 1,
             vertical: rulerOutsidePadding,
@@ -28,11 +33,13 @@ class TimelineItemWithThumbnail extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           // outside of the range of the timeline, curItem.t will be -1 and an empty container should be returned
-          child: (curItem.t >= 0) ? thumbnailProvider.thumbnail(curItem.tSecs!) : new Container()
+          child: (curItem.t >= 0)
+              ? Image(image: thumbnailProvider.thumbnail(curItem.tSecs!), fit: BoxFit.contain)
+              : new Container(),
     ));
   }
 }
 
 abstract class ThumbnailProvider {
-  Image thumbnail(int seconds);
+  ImageProvider thumbnail(int seconds);
 }
