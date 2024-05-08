@@ -11,7 +11,7 @@ class BasicExamplePage extends StatefulWidget {
 class _BasicExamplePageState extends State<BasicExamplePage> {
   double? selectedTimeFromTopLine;
   double? selectedTimeFromBottomline;
-  final broadcastticker = BroadcastTicker(0.0, 100.0);
+  final broadcastticker = BroadcastTicker(0.0, 100.0, tstep: 0.1);
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +23,10 @@ class _BasicExamplePageState extends State<BasicExamplePage> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          ScrollableTimeline(
+                          ScrollableTimeline.withThumbnails(
                               lengthSecs: 100,
-                              stepSecs: 10,
+                              stepSecs: 1,
+                              thumbnailProvider: ExampleThumbnailProvider(),
                               height: 120,
                               rulerOutsidePadding: 10,
                               timeStream: broadcastticker.stream, //ticker.tick(ticks: 1000
@@ -70,4 +71,14 @@ class _BasicExamplePageState extends State<BasicExamplePage> {
         )
     );
   }
+}
+
+class ExampleThumbnailProvider implements ThumbnailProvider {
+  final assets = ["assets/icon_flutter.png", "assets/icon_flutter_solid.png", "assets/icon_flutter_dk-blue.png", "assets/icon_flutter_wht.png"];
+
+  @override
+  Image thumbnail(int seconds) {
+    return Image(image: AssetImage(assets[seconds % assets.length]), fit: BoxFit.contain,);
+  }
+
 }
