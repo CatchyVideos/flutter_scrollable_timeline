@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:scrollable_timeline/src/timeline_item_with_thumbnail.dart';
 
 import 'dragging_state_provider.dart';
 import 'timeline_scrollbehavior.dart';
@@ -120,6 +121,8 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
   final double _pixPerSecs;
   final int nPadItems;
   final double _divisions;
+  final ThumbnailProvider? thumbnailProvider;
+  final bool _thumbnailsEnabled;
   /// the class constructor
   const ScrollableTimeline(
       {required this.lengthSecs,
@@ -147,11 +150,49 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
       this.cursorColor = Colors.red,
       this.activeItemTextColor = Colors.blue,
       this.itemTextColor = Colors.grey,
-      this.itemExtent = 60})
+      this.itemExtent = 60,
+      this.thumbnailProvider = null})
       : assert(stepSecs > 0),
         assert(lengthSecs > stepSecs),
         assert(rulerSize >= 8,
             "rulerSize smaller than 8 will cause graphic glitches"),
+        _thumbnailsEnabled = false,
+        _pixPerSecs = itemExtent / stepSecs,
+        _divisions = (lengthSecs / stepSecs) + 1;
+
+  ScrollableTimeline.withThumbnails({required this.lengthSecs,
+    required this.stepSecs,
+    required this.thumbnailProvider,
+    this.timeStream,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.enablePosUpdateWhileDragging=false,
+    this.onVisibileTimeRangeUpdated,
+    this.onDragEnd,
+    required this.height,
+    this.rulerOutsidePadding = 10,
+    this.rulerSize = 8,
+    this.rulerInsidePadding = 5,
+    //TODO currently this default value is set to a very high value, that is appropriate for even full window full width timeline on web platform
+    //     but is actually an overkill. I should define this using mediaquery https://api.flutter.dev/flutter/widgets/MediaQuery-class.html
+    //     But since I am using ListView.builder with itemBuilder, it is probably OK to leave the code as it is
+    //  TODO: wait for when widget width is available (see for https://github.com/ayham95/Measured-Size/blob/main/lib/measured_size.dart)
+    //  and automatically define the required number of pad items
+    this.nPadItems = 50,
+    this.backgroundColor = Colors.white,
+    this.showCursor = true,
+    this.showMinutes = true,
+    this.shownSecsMultiples = 1,
+    this.cursorColor = Colors.red,
+    this.activeItemTextColor = Colors.blue,
+    this.itemTextColor = Colors.grey,
+    this.itemExtent = 60})
+      : assert(thumbnailProvider != null),
+        assert(stepSecs > 0),
+        assert(lengthSecs > stepSecs),
+        assert(rulerSize >= 8,
+        "rulerSize smaller than 8 will cause graphic glitches"),
+        _thumbnailsEnabled = true,
         _pixPerSecs = itemExtent / stepSecs,
         _divisions = (lengthSecs / stepSecs) + 1;
 
@@ -199,17 +240,19 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
 
   /// convert a time to a scroll offset for the timeline
   double timeToScrollOffset(double t) {
+    double offsetStartOfItem = widget._thumbnailsEnabled ? 0 : 0.5;
     double w=context.size?.width ?? 0.0;
     updateVisibleTimeRange(w/widget._pixPerSecs);
     return t * widget._pixPerSecs -
-        (w / 2 - widget.itemExtent * (0.5 + widget.nPadItems));
+        (w / 2 - widget.itemExtent * (offsetStartOfItem + widget.nPadItems));
   }
 
   /// convert a scroll offset of the timeline to a time
   double scrollOffsetToTime(double offset) {
+    double offsetStartOfItem = widget._thumbnailsEnabled ? 0 : 0.5;
     double w = context.size?.width ?? 0.0;
     updateVisibleTimeRange(w/widget._pixPerSecs);
-    return (offset + (w / 2 - widget.itemExtent * (0.5 + widget.nPadItems))) /
+    return (offset + (w / 2 - widget.itemExtent * (offsetStartOfItem + widget.nPadItems))) /
         widget._pixPerSecs;
   }
 
@@ -333,12 +376,12 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   }
 
   //------------------------------------------------------------
-  TimelineItem _itemBuilder(BuildContext buildContext, int index) {
+  Widget _itemBuilder(BuildContext buildContext, int index) {
     TimelineItemData itemData;
     if (index < widget.nPadItems ||
         index >= widget.nPadItems + widget._divisions) {
       itemData = TimelineItemData(
-          t: 0,
+          t: -1,
           tMins: 0,
           tSecs: 0,
           color: widget.backgroundColor,
@@ -369,6 +412,36 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
         key: UniqueKey()); //TODO I could use ObjectKey(itemData) instead
   }
 
+  Widget _itemBuilderWithThumbnail(BuildContext buildContext, int index) {
+    TimelineItemData itemData;
+    if (index < widget.nPadItems ||
+        index >= widget.nPadItems + widget._divisions - 1) {
+      itemData = TimelineItemData(
+          t: -1,  // TimeLineItemWithThumbnail will return an empty container if t == -1
+          tMins: 0,
+          tSecs: 0,
+          fontSize: 14);
+    } else {
+      int i = index - widget.nPadItems;
+      int t = i * widget.stepSecs;
+      final secs = t % 60;
+
+      final shownSecs = (secs % widget.shownSecsMultiples == 0) ? secs : null;
+      int? mins;
+      if (widget.showMinutes) {
+        mins = (t / 60).floor();
+      }
+      itemData = TimelineItemData(
+          t: t,
+          tMins: mins,
+          tSecs: shownSecs,
+          fontSize: 14.0);
+    }
+    return TimelineItemWithThumbnail(itemData, widget.backgroundColor,
+        widget.rulerOutsidePadding, widget.rulerSize, widget.rulerInsidePadding, widget.thumbnailProvider!,
+        key: UniqueKey()); //TODO I could use ObjectKey(itemData) instead
+  }
+
   //------------------------------------------------------------
   // the actual timeline ui
   Container _timeLineBody() {
@@ -388,7 +461,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                     // the size in pixel of each item in the scale
                     itemExtent: widget.itemExtent.toDouble(),
                     itemCount: widget._divisions.ceil() + 2 * widget.nPadItems,
-                    itemBuilder: _itemBuilder)
+                    itemBuilder: (widget._thumbnailsEnabled) ? _itemBuilderWithThumbnail : _itemBuilder)
                 .build(context),
             indicatorWidget(widget)
           ],

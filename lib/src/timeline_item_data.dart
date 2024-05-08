@@ -11,7 +11,8 @@ class TimelineItemData {
   /// the "seconds" part of the time: if null show "|" instead
   int? tSecs;
 
-  /// text color to use for "minutes" and "seconds" text
+  /// text color to use for "minutes" and "seconds" text. This field is not used
+  /// in TimeLineItemWithThumbnail
   Color color;
 
   /// font size to use for "minutes" and "seconds" text: note that this
@@ -21,6 +22,6 @@ class TimelineItemData {
       {required this.t,
       required this.tMins,
       required this.tSecs,
-      required this.color,
-      required this.fontSize});
+      required this.fontSize,
+      this.color = const Color(0)});
 }
