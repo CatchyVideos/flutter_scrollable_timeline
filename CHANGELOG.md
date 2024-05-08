@@ -10,3 +10,6 @@
   scrolling multiple linked timelines when dragging.
 ## [1.0.4]
 * added new parameter ``onVisibileTimeRangeUpdated`` to ``ScrollableTimeline`` and made all callback parameters nullables.
+## [1.0.5]
+* added ``ScrollableTimeLine.withThumbnails`` to have a timeline with thumbnails instead of minutes  
+  and seconds. For this an implementation of ``ThumbnailProvider`` has to be supplied.
