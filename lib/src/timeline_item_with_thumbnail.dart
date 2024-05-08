@@ -33,13 +33,13 @@ class TimelineItemWithThumbnail extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           // outside of the range of the timeline, curItem.t will be -1 and an empty container should be returned
-          child: (curItem.t >= 0)
-              ? Image(image: thumbnailProvider.thumbnail(curItem.tSecs!), fit: BoxFit.contain)
+          child: (curItem.t >= 0 && thumbnailProvider.thumbnail(curItem.tSecs!) != null)
+              ? Image(image: thumbnailProvider.thumbnail(curItem.tSecs!)!, fit: BoxFit.contain)
               : new Container(),
     ));
   }
 }
 
 abstract class ThumbnailProvider {
-  ImageProvider thumbnail(int seconds);
+  ImageProvider? thumbnail(int seconds);
 }
