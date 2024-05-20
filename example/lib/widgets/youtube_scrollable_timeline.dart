@@ -95,8 +95,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              lengthSecs: lengthSecs,
-              stepSecs: mainTimelineStepSecs,
+              length: Duration(seconds: lengthSecs),
+              stepSize: Duration(seconds: mainTimelineStepSecs),
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,
               rulerInsidePadding: widget.rulerInsidePadding,
@@ -117,8 +117,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              lengthSecs: lengthSecs,
-              stepSecs: mainTimelineStepSecs,
+              length: Duration(seconds: lengthSecs),
+              stepSize: Duration(seconds: mainTimelineStepSecs),
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,
               rulerInsidePadding: widget.rulerInsidePadding,
@@ -134,8 +134,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
               onDragEnd: _updateSelectedTime,
           ),
           ScrollableTimeline(
-              lengthSecs: lengthSecs,
-              stepSecs: 1,
+              length: Duration(seconds: lengthSecs),
+              stepSize: Duration(seconds: 1),
               shownSecsMultiples: widget.shownSecsMultiples,
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,

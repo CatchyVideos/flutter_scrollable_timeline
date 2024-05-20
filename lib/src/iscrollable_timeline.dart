@@ -5,8 +5,8 @@ import 'timeline_item_data.dart';
 /// base class for [ScrollableTimeline] implementations
 /// TODO: not used anymore: remove?
 abstract class IScrollableTimeLine {
-  abstract final int lengthSecs;
-  abstract final int stepSecs;
+  abstract final Duration length;
+  abstract final Duration stepSize;
   abstract final double height;
   abstract final double rulerOutsidePadding;
   abstract final double rulerSize;

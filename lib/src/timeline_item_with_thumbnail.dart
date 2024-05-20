@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'timeline_item_data.dart';
 
 class TimelineItemWithThumbnail extends StatelessWidget {
-  final TimelineItemData curItem;
+  final Duration position;
   // potentially independent bg color for each item
   final Color backgroundColor;
   final double rulerOutsidePadding;
@@ -11,7 +10,7 @@ class TimelineItemWithThumbnail extends StatelessWidget {
   final ThumbnailProvider thumbnailProvider;
 
   TimelineItemWithThumbnail(
-      this.curItem,
+      this.position,
       this.backgroundColor,
       this.rulerOutsidePadding,
       this.rulerSize,
@@ -33,13 +32,13 @@ class TimelineItemWithThumbnail extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           // outside of the range of the timeline, curItem.t will be -1 and an empty container should be returned
-          child: (curItem.t >= 0 && thumbnailProvider.thumbnail(curItem.tSecs!) != null)
-              ? Image(image: thumbnailProvider.thumbnail(curItem.tSecs!)!, fit: BoxFit.contain)
+          child: (position >= Duration.zero && thumbnailProvider.thumbnail(position) != null)
+              ? Image(image: thumbnailProvider.thumbnail(position)!, fit: BoxFit.contain)
               : new Container(),
     ));
   }
 }
 
 abstract class ThumbnailProvider {
-  ImageProvider? thumbnail(int seconds);
+  ImageProvider? thumbnail(Duration position);
 }

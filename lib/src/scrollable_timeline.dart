@@ -27,9 +27,11 @@ import 'timeline_item.dart';
 /// [onDragEnd] : callback when the user stops dragging the timeline, called with
 /// the selected time value when dragging ended.
 ///
-/// [lengthSecs] : the total number of seconds shown in the timeline
+/// [length] : the total length of the timeline
 ///
-/// [stepSecs] : the time step to use between items in the timeline
+/// [stepSize] : the time step to use between items in the timeline.
+/// For a normal timeline (without thumbnails), this duration should be an
+/// integer amount of seconds, to ensure correct functionality
 ///
 /// [timeStream] : an optional stream of time values. when a value is received
 /// the timeline is scrolled to the received time value.
@@ -65,10 +67,10 @@ import 'timeline_item.dart';
 /// center. the value of required pad items is  <= 0.5*(widget width)/(itemExtent)
 /// the default value should be ok for all screens and platforms
 class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
-  /// the total number of seconds shown in the timeline
-  final int lengthSecs;
+  /// the total length of the timeline
+  final Duration length;
   /// the time step to use between items in the timeline
-  final int stepSecs;
+  final Duration stepSize;
   /// an optional stream of time values.
   ///
   /// when a value is received the timeline is scrolled to the received time value.
@@ -118,15 +120,13 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
   final Color itemTextColor;
   /// width of each time mark item (with text of minutes and seconds)
   final int itemExtent;
-  final double _pixPerSecs;
   final int nPadItems;
-  final double _divisions;
   final ThumbnailProvider? thumbnailProvider;
   final bool _thumbnailsEnabled;
   /// the class constructor
   const ScrollableTimeline(
-      {required this.lengthSecs,
-      required this.stepSecs,
+      {required this.length,
+      required this.stepSize,
       this.timeStream,
       this.onDragStart,
       this.onDragUpdate,
@@ -152,16 +152,15 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
       this.itemTextColor = Colors.grey,
       this.itemExtent = 60,
       this.thumbnailProvider = null})
-      : assert(stepSecs > 0),
-        assert(lengthSecs > stepSecs),
+      : assert(stepSize > Duration.zero),
+        assert(length > stepSize),
         assert(rulerSize >= 8,
             "rulerSize smaller than 8 will cause graphic glitches"),
-        _thumbnailsEnabled = false,
-        _pixPerSecs = itemExtent / stepSecs,
-        _divisions = (lengthSecs / stepSecs) + 1;
+        _thumbnailsEnabled = false;
 
-  ScrollableTimeline.withThumbnails({required this.lengthSecs,
-    required this.stepSecs,
+
+  ScrollableTimeline.withThumbnails({required this.length,
+    required this.stepSize,
     required this.thumbnailProvider,
     this.timeStream,
     this.onDragStart,
@@ -188,13 +187,17 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
     this.itemTextColor = Colors.grey,
     this.itemExtent = 60})
       : assert(thumbnailProvider != null),
-        assert(stepSecs > 0),
-        assert(lengthSecs > stepSecs),
+        assert(stepSize > Duration.zero),
+        assert(length > stepSize),
         assert(rulerSize >= 8,
         "rulerSize smaller than 8 will cause graphic glitches"),
-        _thumbnailsEnabled = true,
-        _pixPerSecs = itemExtent / stepSecs,
-        _divisions = (lengthSecs / stepSecs) + 1;
+        _thumbnailsEnabled = true;
+
+  int get _pixPerSecs => 1000*itemExtent ~/ stepSize.inMilliseconds;
+
+  double get _divisions => (length.inMilliseconds / stepSize.inMilliseconds) + 1;
+
+  double get lengthInSecs => length.inMilliseconds.toDouble()/1000;
 
   @override
   _ScrollableTimelineState createState() => _ScrollableTimelineState();
@@ -212,6 +215,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
     //print("*FLT* initState called");
     // if isDragging then ignore stream updates about current playing time
     // by default dragging state is local to this widget (non shared)
+    assert(widget._thumbnailsEnabled || widget.stepSize.inMilliseconds % 1000 == 0,
+      "The stepSize should be an integer amount of seconds for correct functionality");
     draggingState = NonSharedDraggingState();
     _setScrollController();
     //important: set timeStreamSub after setting up scrollController
@@ -224,7 +229,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       if(identityHashCode(widget)==draggingState.draggingId)
         return;
       // print("not dragging");
-      final tClamped = t.clamp(0.0, widget.lengthSecs.toDouble());
+      final tClamped = t.clamp(0.0, widget.lengthInSecs);
       _scrollController.jumpTo(timeToScrollOffset(tClamped));
     });
   }
@@ -274,8 +279,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
       if (t < 0) {
         t = 0;
       }
-      if (t > widget.lengthSecs) {
-        t = widget.lengthSecs.toDouble();
+      if (t > widget.lengthInSecs) {
+        t = widget.lengthInSecs.toDouble();
       }
     }
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
@@ -329,8 +334,8 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
               if (t < 0) {
                 tclipped = 0;
               }
-              if (t > widget.lengthSecs) {
-                tclipped = widget.lengthSecs.toDouble();
+              if (t > widget.lengthInSecs) {
+                tclipped = widget.lengthInSecs;
               }
 
            if (scrollNotification is ScrollUpdateNotification) {
@@ -388,7 +393,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
           fontSize: 14);
     } else {
       int i = index - widget.nPadItems;
-      int t = i * widget.stepSecs;
+      int t = i * widget.stepSize.inSeconds;
       final secs = t % 60;
 
       final shownSecs = (secs % widget.shownSecsMultiples == 0) ? secs : null;
@@ -413,31 +418,16 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   }
 
   Widget _itemBuilderWithThumbnail(BuildContext buildContext, int index) {
-    TimelineItemData itemData;
+    Duration position;
     if (index < widget.nPadItems ||
         index >= widget.nPadItems + widget._divisions - 1) {
-      itemData = TimelineItemData(
-          t: -1,  // TimeLineItemWithThumbnail will return an empty container if t == -1
-          tMins: 0,
-          tSecs: 0,
-          fontSize: 14);
+        position = Duration(seconds: -1);  // TimeLineItemWithThumbnail will return an empty container if position == -1
+
     } else {
       int i = index - widget.nPadItems;
-      int t = i * widget.stepSecs;
-      final secs = t % 60;
-
-      final shownSecs = (secs % widget.shownSecsMultiples == 0) ? secs : null;
-      int? mins;
-      if (widget.showMinutes) {
-        mins = (t / 60).floor();
-      }
-      itemData = TimelineItemData(
-          t: t,
-          tMins: mins,
-          tSecs: shownSecs,
-          fontSize: 14.0);
+      position = widget.stepSize * i;
     }
-    return TimelineItemWithThumbnail(itemData, widget.backgroundColor,
+    return TimelineItemWithThumbnail(position, widget.backgroundColor,
         widget.rulerOutsidePadding, widget.rulerSize, widget.rulerInsidePadding, widget.thumbnailProvider!,
         key: UniqueKey()); //TODO I could use ObjectKey(itemData) instead
   }

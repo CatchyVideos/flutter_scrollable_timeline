@@ -24,8 +24,8 @@ class _BasicExamplePageState extends State<BasicExamplePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           ScrollableTimeline.withThumbnails(
-                              lengthSecs: 100,
-                              stepSecs: 1,
+                              length: Duration(seconds: 100),
+                              stepSize: Duration(seconds: 1),
                               thumbnailProvider: ExampleThumbnailProvider(),
                               height: 120,
                               rulerOutsidePadding: 10,
@@ -45,8 +45,8 @@ class _BasicExamplePageState extends State<BasicExamplePage> {
                           Text(selectedTimeFromTopLine.toString()),
                           Divider(),
                           ScrollableTimeline(
-                              lengthSecs: 100,
-                              stepSecs: 2,
+                              length: Duration(seconds: 100),
+                              stepSize: Duration(seconds: 1),
                               height: 120,
                               rulerOutsidePadding: 10,
                               timeStream: broadcastticker.stream, ////ticker2.tick(ticks: 1000
@@ -77,8 +77,8 @@ class ExampleThumbnailProvider implements ThumbnailProvider {
   final assets = ["assets/icon_flutter.png", "assets/icon_flutter_solid.png", "assets/icon_flutter_dk-blue.png", "assets/icon_flutter_wht.png"];
 
   @override
-  ImageProvider thumbnail(int seconds) {
-    return AssetImage(assets[seconds % assets.length]);
+  ImageProvider thumbnail(Duration position) {
+    return AssetImage(assets[position.inSeconds % assets.length]);
   }
 
 }

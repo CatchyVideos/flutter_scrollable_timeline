@@ -23,8 +23,8 @@ class _ExpandableExamplePageState extends State<ExpandableExamplePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              lengthSecs: 110,
-              stepSecs: 10,
+              length: Duration(seconds: 110),
+              stepSize: Duration(seconds: 10),
               height: timeLineHeight,
               rulerOutsidePadding: rulerOutsidePadding,
               rulerInsidePadding: rulerInsidePadding,
@@ -46,8 +46,8 @@ class _ExpandableExamplePageState extends State<ExpandableExamplePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              lengthSecs: 100,
-              stepSecs: 10,
+              length: Duration(seconds: 100),
+              stepSize: Duration(seconds: 10),
               height: timeLineHeight,
               rulerOutsidePadding: rulerOutsidePadding,
               rulerInsidePadding: rulerInsidePadding,
@@ -61,8 +61,8 @@ class _ExpandableExamplePageState extends State<ExpandableExamplePage> {
               onDragUpdate: (t) {  broadcastticker.setForcedCurTime(t); }, //no setState needed here, because the updated time stream will already trigger rebuild
               onDragEnd: updateSelectedTime),
           ScrollableTimeline(
-              lengthSecs: 100,
-              stepSecs: 2,
+              length: Duration(seconds: 100),
+              stepSize: Duration(seconds: 2),
               height: timeLineHeight,
               rulerOutsidePadding: rulerOutsidePadding,
               rulerInsidePadding: rulerInsidePadding,
