@@ -13,3 +13,8 @@
 ## [1.0.5]
 * added ``ScrollableTimeLine.withThumbnails`` to have a timeline with thumbnails instead of minutes  
   and seconds. For this an implementation of ``ThumbnailProvider`` has to be supplied.
+
+## [2.0.0]
+* The member variables ``lengthSecs`` and ``StepSecs`` of ``ScrollableTimeline.withThumbnails`` are replaced by ``length`` and ``stepSize``, 
+which are of type ``Duration`` instead of ``int`` and can therefore also be a non-integer amount of seconds. This breaks backwards 
+compatibility with version 1.0.5. The constructor ScrollableTimeline maintains backwards compatibility however.
