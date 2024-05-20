@@ -45,8 +45,8 @@ class _BasicExamplePageState extends State<BasicExamplePage> {
                           Text(selectedTimeFromTopLine.toString()),
                           Divider(),
                           ScrollableTimeline(
-                              length: Duration(seconds: 100),
-                              stepSize: Duration(seconds: 1),
+                              lengthSecs: 100,
+                              stepSecs: 1,
                               height: 120,
                               rulerOutsidePadding: 10,
                               timeStream: broadcastticker.stream, ////ticker2.tick(ticks: 1000

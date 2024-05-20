@@ -75,7 +75,7 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
         builder: (context, value) {
           int lengthSecs = value.metaData.duration.inSeconds + 1;
           //print ("YouTubeScrollableTimeline lengthSecs $lengthSecs");
-          if(lengthSecs<2*mainTimelineStepSecs) lengthSecs=2*mainTimelineStepSecs; //to avoid exception when lenghtSecs<stepSecs
+          if(lengthSecs<2*mainTimelineStepSecs) lengthSecs=2*mainTimelineStepSecs; //to avoid exception when lengthSecs<stepSecs
           return ScrollableTimelineSharedDragging(
               child: SingleChildScrollView(
                   padding: const EdgeInsets.all(10),
@@ -95,8 +95,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              length: Duration(seconds: lengthSecs),
-              stepSize: Duration(seconds: mainTimelineStepSecs),
+              lengthSecs: lengthSecs,
+              stepSecs:  mainTimelineStepSecs,
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,
               rulerInsidePadding: widget.rulerInsidePadding,
@@ -117,8 +117,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           ScrollableTimeline(
-              length: Duration(seconds: lengthSecs),
-              stepSize: Duration(seconds: mainTimelineStepSecs),
+              lengthSecs: lengthSecs,
+              stepSecs: mainTimelineStepSecs,
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,
               rulerInsidePadding: widget.rulerInsidePadding,
@@ -134,8 +134,8 @@ class _YouTubeScrollableTimelineState extends State<YouTubeScrollableTimeline> {
               onDragEnd: _updateSelectedTime,
           ),
           ScrollableTimeline(
-              length: Duration(seconds: lengthSecs),
-              stepSize: Duration(seconds: 1),
+              lengthSecs: lengthSecs,
+              stepSecs: 1,
               shownSecsMultiples: widget.shownSecsMultiples,
               height: widget.timeLineHeight,
               rulerOutsidePadding: widget.rulerOutsidePadding,

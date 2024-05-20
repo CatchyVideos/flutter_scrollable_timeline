@@ -124,9 +124,9 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
   final ThumbnailProvider? thumbnailProvider;
   final bool _thumbnailsEnabled;
   /// the class constructor
-  const ScrollableTimeline(
-      {required this.length,
-      required this.stepSize,
+  ScrollableTimeline(
+      {required int lengthSecs,
+      required int stepSecs,
       this.timeStream,
       this.onDragStart,
       this.onDragUpdate,
@@ -152,14 +152,16 @@ class ScrollableTimeline extends StatefulWidget implements IScrollableTimeLine {
       this.itemTextColor = Colors.grey,
       this.itemExtent = 60,
       this.thumbnailProvider = null})
-      : assert(stepSize > Duration.zero),
-        assert(length > stepSize),
+      : assert(stepSecs > 0),
+        assert(lengthSecs > stepSecs),
         assert(rulerSize >= 8,
             "rulerSize smaller than 8 will cause graphic glitches"),
-        _thumbnailsEnabled = false;
+        _thumbnailsEnabled = false,
+        stepSize = Duration(seconds: stepSecs),
+        length = Duration(seconds: lengthSecs);
 
 
-  ScrollableTimeline.withThumbnails({required this.length,
+  const ScrollableTimeline.withThumbnails({required this.length,
     required this.stepSize,
     required this.thumbnailProvider,
     this.timeStream,
